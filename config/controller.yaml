@@ -1,0 +1,25 @@
+# Controller 설정 (transped_mujoco robot_info.yaml / controller.cpp 의 하드코딩 값에 해당)
+# 관절 순서 = motors.yaml 에 등록된 순서
+# 관절별 명령 프로토콜은 motors.yaml 의 control_mode 로 결정된다.
+#   impedance / position / velocity : 궤적을 드라이브로 전송, PD 게인은 motors.yaml p_gain/d_gain (드라이브 단위)
+#   torque                          : 아래 torque.kp/kd 로 PC에서 토크 계산 [Nm/rad, Nm·s/rad]
+
+control_frequency: 500.0   # Hz, (0, 1000]
+
+# 보낼 관절 명령 종류: position | velocity | torque (torque 는 아직 미구현)
+# motors.yaml control_mode 와 맞아야 한다 (position -> position/impedance, velocity -> velocity, torque -> torque)
+mode: position
+
+# 상태 순서: INIT -> HOMING (1단계 -> 2단계 자세, 2단계 유지) , Ctrl+C -> FINISH
+# HOMING 자세는 include/Controller/controller.cpp 의 case HOMING 에서 직접 설정한다.
+homing:
+  max_distance: 3.0    # rad, 시작 위치와 1단계 자세 차이가 이보다 크면 시작하지 않음
+
+# control_mode: torque 인 관절에만 사용. 스칼라면 모든 관절 동일, 리스트면 관절 수만큼
+torque:
+  kp: 20.0
+  kd: 0.5
+  tau_max: 3.0         # Nm, 관절 토크 제한
+
+safety:
+  max_tracking_error: 0.5   # rad, |q_ref - q| 가 이보다 크면 FINISH (드라이브 disable)
